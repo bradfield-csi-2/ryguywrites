@@ -4,10 +4,11 @@
 
 #define TEST_LOOPS 3333333 // divided by 3 to get rid of mod operation
 
-uint64_t pagecount(uint64_t memory_size, uint64_t page_shift) {
-  memory_size = memory_size >> page_shift;
-  return memory_size;
-}
+// removed the function call, and placed it directly in loop for further spped
+// uint64_t pagecount(uint64_t memory_size, uint64_t page_shift) {
+//   memory_size = memory_size >> page_shift;
+//   return memory_size;
+// }
 
 int main (int argc, char** argv) {
   clock_t baseline_start, baseline_end, test_start, test_end;
@@ -16,7 +17,7 @@ int main (int argc, char** argv) {
   int i, ignore = 0;
 
   uint64_t msizes[] = {1L << 32, 1L << 40, 1L << 52};
-  uint64_t pshifts[] = {12, 16, 32}; // edited to allow bit shifting instead of division
+  uint64_t pshifts[] = {12, 16, 32};
 
   baseline_start = clock();
   for (i = 0; i < TEST_LOOPS; i++) {
@@ -30,24 +31,16 @@ int main (int argc, char** argv) {
   test_start = clock();
   for (i = 0; i < TEST_LOOPS; i++) {
     // give up modularity to remove mod operations
-    memory_size = msizes[0];
-    page_size = pshifts[0];
-    ignore += pagecount(memory_size, page_size) + memory_size + page_size;
+    // removed variables
+    ignore += (msizes[0] >> pshifts[0]) + msizes[0] + pshifts[0];
 
-    memory_size = msizes[1];
-    page_size = pshifts[1];
-    ignore += pagecount(memory_size, page_size) + memory_size + page_size;
+    ignore += (msizes[1] >> pshifts[1]) + msizes[1] + pshifts[1];
 
-    memory_size = msizes[2];
-    page_size = pshifts[2];
-    ignore += pagecount(memory_size, page_size) + memory_size + page_size;
+    ignore += (msizes[2] >> pshifts[2]) + msizes[2] + pshifts[2];
   }
   // deal with the remainder (10000000 % 3 == 1)
-  memory_size = msizes[0];
-  page_size = pshifts[0];
-  ignore += pagecount(memory_size, page_size) + memory_size + page_size;
+  ignore += (msizes[0] >> pshifts[0]) + msizes[0] + pshifts[0];
   test_end = clock();
-
   clocks_elapsed = test_end - test_start - (baseline_end - baseline_start);
   time_elapsed = clocks_elapsed / CLOCKS_PER_SEC;
 
