@@ -1,0 +1,43 @@
+a hand wavy, first pass approach to approximating run time:
+assumptions:
+	- single threaded application
+	- we read/write to/from memory, ignoring disk
+	- assume only L1/L2 caches exist, with 4 and 10 cycle latencies respectively
+		- we pretend everythign can be found in L2 cache
+		- this is because dealing with deeper layers of memory has a recursive nature
+	- our program cares more about spacial locality and not temporal locality
+		- we pretend we're in a situation similar to option one of the loop_order hw
+	- the data being read and written fits neatly into the cache block sizes
+	- we pretend our cache misses are bottle necks for compute operations
+	- for now, pretend moving written data from cache to memory is instantaneous
+
+first, ignoring caches/pipelines/branch prediction:
+compute_cycles_needed = sum(instruction*cycles_per_instruction)
+
+try to consider pipelines and branch prediction:
+compute_cycles_needed = compute_cycles_needed * branch_pred_success_rate / pipeline_length 
+						+ branch_pred_fail_rate * penalty 
+						+ clock_cycles_needed * branch_pred_fail_rate / pipeline_length
+
+so far we pretended getting data is instantaneous, now we try to consider caching:
+memory_cycles_needed += #L1_cache_hits * 4
+						+ #L1_cache_misses * 4 + #L2_cache_hits * 10
+						+ #L1_cache_misses * cache_eviction_cost
+
+we can attempt a first pass approximation of L1 cache hits and misses:
+#L1_read_misses = total_bytes_read / L1_cache_size * #L1_cache_blocks
+#L1_read_hits = total_bytes_read / size_of_data_read - #L1_read_misses
+#L2_read_hits = #L1_cache_misses
+#L2_read_misses = 0 // see assumptions
+
+#L1_write_misses = total_bytes_written / L1_cache_size * #L1_cache_blocks
+#L1_write_hits = total_bytes_written / size_of_individual_writes - #L1_write_misses
+
+#L1_cache_hits = #L1_read_hits + #L1_write_hits
+#L1_cache_misses = #L1_read_misses + #L1_write_misses
+#L2_cache_hits = #L2_read_hits
+#L2_cache_misses = #L2_read_misses
+
+now to get the time elapsed in seconds:
+total_cycles_needed = compute_cycles_needed + memory_cycles_needed
+time_elapsed = total_cycles_needed * 1/average_clock_speed
