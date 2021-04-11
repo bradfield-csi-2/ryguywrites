@@ -27,15 +27,15 @@ func AverageAge() float64 { // can't change float64 to 32 because math stdlib as
 
 func AveragePaymentAmount() float64 {
 	var i uint32 = 0
-	var sum1, sum2, sum3, sum4 float64 = 0, 0, 0, 0
+	var sum1, sum2, sum3, sum4 uint64 = 0, 0, 0, 0
 	for i < 999997 {
-		sum1 += float64(cents[i])
-		sum2 += float64(cents[i+1])
-		sum3 += float64(cents[i+2])
-		sum4 += float64(cents[i+3])
+		sum1 += uint64(cents[i])
+		sum2 += uint64(cents[i+1])
+		sum3 += uint64(cents[i+2])
+		sum4 += uint64(cents[i+3])
 		i += 4
 	}
-	return (sum1 + sum2 + sum3 + sum4)/100000000 // denominator is length of array * 100
+	return float64(sum1 + sum2 + sum3 + sum4)/100000000 // denominator is length of array * 100
 }
 
 // Compute the standard deviation of payment amounts
